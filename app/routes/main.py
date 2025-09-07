@@ -1,7 +1,13 @@
-from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for
+from flask import Blueprint, render_template, request, jsonify, flash, redirect, url_for, make_response
 from flask_login import login_required, current_user
 from datetime import datetime, timedelta
 from sqlalchemy.exc import SQLAlchemyError
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.units import inch
+from reportlab.lib import colors
+from io import BytesIO
 from .. import db
 from ..models import Volo, Prenotazione, Biglietto, CompagniaAerea, Aeroporto
 from ..queries import (
@@ -289,4 +295,137 @@ def acquista_biglietto(volo_id):
             db.session.rollback()
             flash(f'Errore durante l\'acquisto del biglietto: {str(e)}', 'danger')
     
-    return render_template('main/acquista_biglietto.html', volo=volo) 
+    return render_template('main/acquista_biglietto.html', volo=volo)
+
+@main.route('/stampa_prenotazione/<int:prenotazione_id>')
+@login_required
+def stampa_prenotazione(prenotazione_id):
+    """Genera e scarica il PDF dei biglietti di una prenotazione"""
+    try:
+        # Recupera la prenotazione e verifica che appartenga all'utente corrente
+        prenotazione = Prenotazione.query.get_or_404(prenotazione_id)
+        if prenotazione.user_id != current_user.id:
+            flash('Non sei autorizzato ad accedere a questa prenotazione', 'error')
+            return redirect(url_for('main.le_mie_prenotazioni'))
+        
+        # Crea il PDF
+        buffer = BytesIO()
+        doc = SimpleDocTemplate(buffer, pagesize=A4)
+        styles = getSampleStyleSheet()
+        story = []
+        
+        # Titolo
+        title_style = ParagraphStyle(
+            'CustomTitle',
+            parent=styles['Heading1'],
+            fontSize=20,
+            textColor=colors.darkblue,
+            spaceAfter=30,
+            alignment=1  # Centrato
+        )
+        story.append(Paragraph("BIGLIETTI VOLO", title_style))
+        story.append(Spacer(1, 20))
+        
+        # Informazioni prenotazione
+        info_style = ParagraphStyle(
+            'InfoStyle',
+            parent=styles['Normal'],
+            fontSize=12,
+            spaceAfter=10
+        )
+        
+        prenotazione_info = [
+            f"<b>Numero Prenotazione:</b> #{prenotazione.id}",
+            f"<b>Data Prenotazione:</b> {prenotazione.data_prenotazione.strftime('%d/%m/%Y %H:%M')}",
+            f"<b>Stato:</b> {prenotazione.stato.title()}",
+            f"<b>Passeggero:</b> {current_user.nome} {current_user.cognome}",
+            f"<b>Email:</b> {current_user.email}",
+            f"<b>Prezzo Totale:</b> €{prenotazione.prezzo_totale:.2f}"
+        ]
+        
+        for info in prenotazione_info:
+            story.append(Paragraph(info, info_style))
+        
+        story.append(Spacer(1, 30))
+        
+        # Dettagli biglietti
+        story.append(Paragraph("<b>DETTAGLI BIGLIETTI</b>", styles['Heading2']))
+        story.append(Spacer(1, 20))
+        
+        for biglietto in prenotazione.biglietti:
+            # Recupera i dettagli del volo
+            volo = biglietto.volo
+            aeroporto_partenza = volo.aeroporto_partenza
+            aeroporto_arrivo = volo.aeroporto_arrivo
+            compagnia = volo.compagnia
+            
+            # Crea una tabella per ogni biglietto
+            biglietto_data = [
+                ['Volo', volo.numero_volo],
+                ['Compagnia', compagnia.nome_compagnia],
+                ['Da', f"{aeroporto_partenza.nome} ({aeroporto_partenza.codice_iata})"],
+                ['A', f"{aeroporto_arrivo.nome} ({aeroporto_arrivo.codice_iata})"],
+                ['Partenza', volo.data_partenza.strftime('%d/%m/%Y %H:%M')],
+                ['Arrivo', volo.data_arrivo.strftime('%d/%m/%Y %H:%M')],
+                ['Classe', biglietto.classe.title()],
+                ['Posto', biglietto.numero_posto or 'Da assegnare'],
+                ['Prezzo', f"€{biglietto.prezzo:.2f}"],
+            ]
+            
+            if biglietto.bagaglio_extra:
+                biglietto_data.append(['Bagaglio Extra', 'Incluso'])
+            
+            if biglietto.servizi_extra:
+                biglietto_data.append(['Servizi Extra', biglietto.servizi_extra])
+            
+            biglietto_table = Table(biglietto_data, colWidths=[2*inch, 4*inch])
+            biglietto_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (0, -1), colors.lightgrey),
+                ('TEXTCOLOR', (0, 0), (-1, -1), colors.black),
+                ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
+                ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+                ('FONTNAME', (1, 0), (1, -1), 'Helvetica'),
+                ('FONTSIZE', (0, 0), (-1, -1), 10),
+                ('GRID', (0, 0), (-1, -1), 1, colors.black),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('TOPPADDING', (0, 0), (-1, -1), 8),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 8),
+            ]))
+            
+            story.append(biglietto_table)
+            story.append(Spacer(1, 20))
+        
+        # Note finali
+        story.append(Spacer(1, 30))
+        note_style = ParagraphStyle(
+            'NoteStyle',
+            parent=styles['Normal'],
+            fontSize=9,
+            textColor=colors.grey,
+            alignment=1  # Centrato
+        )
+        
+        note_text = """
+        <b>IMPORTANTE:</b><br/>
+        • Presentarsi all'aeroporto almeno 2 ore prima della partenza per voli internazionali<br/>
+        • Presentarsi all'aeroporto almeno 1 ora prima della partenza per voli nazionali<br/>
+        • Portare con sé un documento di identità valido<br/>
+        • Verificare le restrizioni sui bagagli presso la compagnia aerea
+        """
+        
+        story.append(Paragraph(note_text, note_style))
+        
+        # Genera il PDF
+        doc.build(story)
+        buffer.seek(0)
+        
+        # Crea la risposta HTTP
+        response = make_response(buffer.getvalue())
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'attachment; filename=biglietti_prenotazione_{prenotazione_id}.pdf'
+        
+        return response
+        
+    except Exception as e:
+        flash(f'Errore durante la generazione del PDF: {str(e)}', 'error')
+        return redirect(url_for('main.le_mie_prenotazioni'))
