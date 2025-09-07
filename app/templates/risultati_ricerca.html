@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Risultati Ricerca - FlightBooker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mb-4">Risultati Ricerca</h1>
+    
+    <!-- Voli Diretti -->
+    <section class="mb-5">
+        <h2>Voli Diretti</h2>
+        {% if voli_diretti %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Volo</th>
+                            <th>Compagnia</th>
+                            <th>Partenza</th>
+                            <th>Arrivo</th>
+                            <th>Orario Partenza</th>
+                            <th>Orario Arrivo</th>
+                            <th>Posti Disponibili</th>
+                            <th>Prezzo</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for volo in voli_diretti %}
+                            <tr>
+                                <td>{{ volo.numero_volo }}</td>
+                                <td>{{ volo.nome_compagnia }}</td>
+                                <td>{{ volo.città_partenza }}</td>
+                                <td>{{ volo.città_arrivo }}</td>
+                                <td>{{ volo.data_partenza.strftime('%H:%M') }}</td>
+                                <td>{{ volo.data_arrivo.strftime('%H:%M') }}</td>
+                                <td>{{ volo.posti_disponibili }}</td>
+                                <td>€{{ "%.2f"|format(volo.prezzo) }}</td>
+                                <td>
+                                    {% if current_user.is_authenticated %}
+                                        <a href="{{ url_for('main.prenota_volo', volo_id=volo.id) }}" 
+                                           class="btn btn-primary btn-sm">Prenota</a>
+                                    {% else %}
+                                        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm">
+                                            Accedi per Prenotare
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                Nessun volo diretto trovato per i criteri di ricerca specificati.
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Voli con Scalo -->
+    <section>
+        <h2>Voli con Scalo</h2>
+        {% if voli_scalo %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Primo Volo</th>
+                            <th>Compagnia</th>
+                            <th>Scalo</th>
+                            <th>Secondo Volo</th>
+                            <th>Compagnia</th>
+                            <th>Orari</th>
+                            <th>Prezzi</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for volo in voli_scalo %}
+                            <tr>
+                                <td>{{ volo.volo1_numero }}</td>
+                                <td>{{ volo.compagnia1 }}</td>
+                                <td>{{ volo.città_scalo }}</td>
+                                <td>{{ volo.volo2_numero }}</td>
+                                <td>{{ volo.compagnia2 }}</td>
+                                <td>
+                                    <small>
+                                        Partenza: {{ volo.data_partenza.strftime('%H:%M') }}<br>
+                                        Scalo: {{ volo.scalo_arrivo.strftime('%H:%M') }} - 
+                                              {{ volo.scalo_partenza.strftime('%H:%M') }}<br>
+                                        Arrivo: {{ volo.data_arrivo.strftime('%H:%M') }}
+                                    </small>
+                                </td>
+                                <td>
+                                    <small>
+                                        Economy: €{{ "%.2f"|format(volo.prezzo_totale_economy) }}<br>
+                                        Business: €{{ "%.2f"|format(volo.prezzo_totale_business) }}<br>
+                                        First: €{{ "%.2f"|format(volo.prezzo_totale_first) }}
+                                    </small>
+                                </td>
+                                <td>
+                                    {% if current_user.is_authenticated %}
+                                        <button class="btn btn-primary btn-sm" 
+                                                onclick="prenotaScalo({{ volo.volo1_id }}, {{ volo.volo2_id }})">
+                                            Prenota
+                                        </button>
+                                    {% else %}
+                                        <a href="{{ url_for('auth.login') }}" class="btn btn-secondary btn-sm">
+                                            Accedi per Prenotare
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                Nessun volo con scalo trovato per i criteri di ricerca specificati.
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- Pulsante Nuova Ricerca -->
+    <div class="text-center mt-4">
+        <a href="{{ url_for('main.cerca_voli') }}" class="btn btn-outline-primary">
+            Nuova Ricerca
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function prenotaScalo(volo1Id, volo2Id) {
+    // Implementare la logica di prenotazione per voli con scalo
+    alert('Funzionalità di prenotazione voli con scalo in sviluppo');
+}
+</script>
+{% endblock %} 

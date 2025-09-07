@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Cerca Voli - FlightBooker{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title mb-0">Cerca Voli</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('main.cerca_voli') }}">
+                    <div class="row g-3">
+                        <!-- Aeroporto Partenza -->
+                        <div class="col-md-6">
+                            <label for="aeroporto_partenza" class="form-label">Aeroporto di Partenza</label>
+                            <select class="form-select" id="aeroporto_partenza" name="aeroporto_partenza" required>
+                                <option value="">Seleziona aeroporto...</option>
+                                {% for aeroporto in aeroporti %}
+                                    <option value="{{ aeroporto.codice_iata }}">{{ aeroporto.città }} ({{ aeroporto.codice_iata }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Aeroporto Arrivo -->
+                        <div class="col-md-6">
+                            <label for="aeroporto_arrivo" class="form-label">Aeroporto di Arrivo</label>
+                            <select class="form-select" id="aeroporto_arrivo" name="aeroporto_arrivo" required>
+                                <option value="">Seleziona aeroporto...</option>
+                                {% for aeroporto in aeroporti %}
+                                    <option value="{{ aeroporto.codice_iata }}">{{ aeroporto.città }} ({{ aeroporto.codice_iata }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Data -->
+                        <div class="col-md-6">
+                            <label for="data" class="form-label">Data del Volo</label>
+                            <input type="date" class="form-control" id="data" name="data" 
+                                   min="{{ today }}" required>
+                        </div>
+
+                        <!-- Passeggeri -->
+                        <div class="col-md-6">
+                            <label for="passeggeri" class="form-label">Numero di Passeggeri</label>
+                            <input type="number" class="form-control" id="passeggeri" name="passeggeri" 
+                                   min="1" max="9" value="1" required>
+                        </div>
+
+                        <!-- Classe -->
+                        <div class="col-md-6">
+                            <label for="classe" class="form-label">Classe</label>
+                            <select class="form-select" id="classe" name="classe" required>
+                                <option value="economy">Economy</option>
+                                <option value="business">Business</option>
+                                <option value="first">First Class</option>
+                            </select>
+                        </div>
+
+                        <!-- Ordinamento -->
+                        <div class="col-md-6">
+                            <label for="ordina_per" class="form-label">Ordina per</label>
+                            <select class="form-select" id="ordina_per" name="ordina_per">
+                                <option value="prezzo">Prezzo</option>
+                                <option value="tempo">Durata del Volo</option>
+                            </select>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="col-12 text-center">
+                            <button type="submit" class="btn btn-primary">Cerca Voli</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Imposta la data minima a oggi
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('data').min = today;
+    
+    // Validazione form
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const partenza = document.getElementById('aeroporto_partenza').value;
+        const arrivo = document.getElementById('aeroporto_arrivo').value;
+        
+        if (partenza === arrivo) {
+            e.preventDefault();
+            alert('L\'aeroporto di partenza non può essere uguale all\'aeroporto di arrivo');
+        }
+    });
+});
+</script>
+{% endblock %} 

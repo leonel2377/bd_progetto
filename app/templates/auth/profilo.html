@@ -1,0 +1,168 @@
+{% extends "base.html" %}
+
+{% block title %}Profilo Utente{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-center">Profilo Utente</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('auth.profilo') }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nome" class="form-label">Nome</label>
+                                <input type="text" class="form-control" id="nome" name="nome" 
+                                       value="{{ current_user.nome }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="cognome" class="form-label">Cognome</label>
+                                <input type="text" class="form-control" id="cognome" 
+                                       name="cognome" value="{{ current_user.cognome }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ current_user.email }}" required>
+                        </div>
+                        
+                        {% if current_user.is_airline %}
+                        <div class="mb-3">
+                            <label for="nome_compagnia" class="form-label">Nome Compagnia</label>
+                            <input type="text" class="form-control" id="nome_compagnia" 
+                                   name="nome_compagnia" 
+                                   value="{{ current_user.compagnia.nome_compagnia }}" required>
+                        </div>
+                        {% endif %}
+                        
+                        <hr class="my-4">
+                        <h4>Modifica Password</h4>
+                        <p class="text-muted">Lascia vuoto se non vuoi modificare la password</p>
+                        
+                        <div class="mb-3">
+                            <label for="password_attuale" class="form-label">Password Attuale</label>
+                            <input type="password" class="form-control" id="password_attuale" 
+                                   name="password_attuale">
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="nuova_password" class="form-label">Nuova Password</label>
+                                <input type="password" class="form-control" id="nuova_password" 
+                                       name="nuova_password">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="conferma_password" class="form-label">
+                                    Conferma Nuova Password
+                                </label>
+                                <input type="password" class="form-control" 
+                                       id="conferma_password" name="conferma_password">
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Salva Modifiche</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            {% if not current_user.is_airline %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Le Mie Prenotazioni</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Volo</th>
+                                    <th>Data</th>
+                                    <th>Stato</th>
+                                    <th>Azioni</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for prenotazione in current_user.prenotazioni %}
+                                <tr>
+                                    <td>
+                                        {{ prenotazione.volo.compagnia.nome_compagnia }} - 
+                                        {{ prenotazione.volo.numero_volo }}
+                                    </td>
+                                    <td>{{ prenotazione.volo.data_partenza.strftime('%d/%m/%Y') }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'success' if prenotazione.stato == 'confermata' 
+                                            else 'warning' if prenotazione.stato == 'in_attesa' 
+                                            else 'danger' }}">
+                                            {{ prenotazione.stato }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('main.visualizza_prenotazione', 
+                                                          prenotazione_id=prenotazione.id) }}" 
+                                           class="btn btn-sm btn-info">
+                                            Dettagli
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">
+                                        Nessuna prenotazione trovata
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const passwordAttuale = document.getElementById('password_attuale');
+    const nuovaPassword = document.getElementById('nuova_password');
+    const confermaPassword = document.getElementById('conferma_password');
+    
+    form.addEventListener('submit', function(e) {
+        // Se viene inserita una nuova password, verifica che tutti i campi password siano compilati
+        if (nuovaPassword.value || confermaPassword.value || passwordAttuale.value) {
+            if (!passwordAttuale.value) {
+                e.preventDefault();
+                alert('Inserisci la password attuale per modificare la password');
+                return;
+            }
+            if (!nuovaPassword.value) {
+                e.preventDefault();
+                alert('Inserisci la nuova password');
+                return;
+            }
+            if (!confermaPassword.value) {
+                e.preventDefault();
+                alert('Conferma la nuova password');
+                return;
+            }
+            if (nuovaPassword.value !== confermaPassword.value) {
+                e.preventDefault();
+                alert('Le password non coincidono');
+                return;
+            }
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% endblock %} 

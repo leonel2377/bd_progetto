@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Statistiche Compagnia - FlightBooker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Statistiche {{ statistiche.nome_compagnia }}</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Filtro Periodo -->
+                    <form method="GET" class="mb-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label for="data_inizio" class="form-label">Data Inizio</label>
+                                <input type="date" class="form-control" id="data_inizio" name="data_inizio"
+                                       value="{{ data_inizio }}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="data_fine" class="form-label">Data Fine</label>
+                                <input type="date" class="form-control" id="data_fine" name="data_fine"
+                                       value="{{ data_fine }}" required>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary">Aggiorna Statistiche</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Riepilogo Generale -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Voli Operati</h5>
+                                    <h2 class="card-text">{{ statistiche.numero_voli }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Passeggeri Totali</h5>
+                                    <h2 class="card-text">{{ statistiche.numero_passeggeri }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Guadagno Totale</h5>
+                                    <h2 class="card-text">€{{ "%.2f"|format(statistiche.guadagno_totale) }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Prezzo Medio</h5>
+                                    <h2 class="card-text">€{{ "%.2f"|format(statistiche.prezzo_medio) }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Distribuzione Passeggeri per Classe -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title mb-0">Distribuzione Passeggeri per Classe</h3>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="graficoClassi"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title mb-0">Dettagli per Classe</h3>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th>Classe</th>
+                                                <th>Passeggeri</th>
+                                                <th>Percentuale</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>Economy</td>
+                                                <td>{{ statistiche.passeggeri_economy }}</td>
+                                                <td>
+                                                    {{ (statistiche.passeggeri_economy / statistiche.numero_passeggeri * 100)|round(1) }}%
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>Business</td>
+                                                <td>{{ statistiche.passeggeri_business }}</td>
+                                                <td>
+                                                    {{ (statistiche.passeggeri_business / statistiche.numero_passeggeri * 100)|round(1) }}%
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>First Class</td>
+                                                <td>{{ statistiche.passeggeri_first }}</td>
+                                                <td>
+                                                    {{ (statistiche.passeggeri_first / statistiche.numero_passeggeri * 100)|round(1) }}%
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Dati per il grafico
+    const ctx = document.getElementById('graficoClassi').getContext('2d');
+    new Chart(ctx, {
+        type: 'pie',
+        data: {
+            labels: ['Economy', 'Business', 'First Class'],
+            datasets: [{
+                data: [
+                    {{ statistiche.passeggeri_economy }},
+                    {{ statistiche.passeggeri_business }},
+                    {{ statistiche.passeggeri_first }}
+                ],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(255, 206, 86, 0.8)',
+                    'rgba(75, 192, 192, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                },
+                title: {
+                    display: true,
+                    text: 'Distribuzione Passeggeri per Classe'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 

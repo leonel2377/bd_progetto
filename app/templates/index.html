@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block title %}Flight Booking - Home{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12 text-center mb-5">
+            <h1 class="display-4">Benvenuto su Flight Booking</h1>
+            <p class="lead">Il tuo sistema di prenotazione voli semplice e affidabile SOTEKAM.Sarl</p>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-lg">
+                <div class="card-body">
+                    <h2 class="card-title text-center mb-4">Cerca il tuo volo</h2>
+                    <form action="{{ url_for('main.cerca_voli') }}" method="POST">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="aeroporto_partenza" class="form-label">Aeroporto di partenza</label>
+                                <select class="form-select" id="aeroporto_partenza" name="aeroporto_partenza" required>
+                                    <option value="">Seleziona...</option>
+                                    {% for aeroporto in aeroporti %}
+                                    <option value="{{ aeroporto.codice_iata }}">{{ aeroporto.città }} ({{ aeroporto.codice_iata }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="aeroporto_arrivo" class="form-label">Aeroporto di arrivo</label>
+                                <select class="form-select" id="aeroporto_arrivo" name="aeroporto_arrivo" required>
+                                    <option value="">Seleziona...</option>
+                                    {% for aeroporto in aeroporti %}
+                                    <option value="{{ aeroporto.codice_iata }}">{{ aeroporto.città }} ({{ aeroporto.codice_iata }})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="data" class="form-label">Data del volo</label>
+                                <input type="date" class="form-control" id="data" name="data" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="passeggeri" class="form-label">Numero passeggeri</label>
+                                <input type="number" class="form-control" id="passeggeri" name="passeggeri" min="1" max="9" value="1" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="classe" class="form-label">Classe</label>
+                                <select class="form-select" id="classe" name="classe">
+                                    <option value="economy">Economy</option>
+                                    <option value="business">Business</option>
+                                    <option value="first">First Class</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="ordina_per" class="form-label">Ordina per</label>
+                                <select class="form-select" id="ordina_per" name="ordina_per">
+                                    <option value="prezzo">Prezzo</option>
+                                    <option value="tempo">Durata</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Cerca Voli</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="row mt-5">
+        <div class="col-md-12 text-center">
+            <h2>Le tue prenotazioni</h2>
+            <a href="{{ url_for('main.le_mie_prenotazioni') }}" class="btn btn-outline-primary">Visualizza prenotazioni</a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if current_user.is_authenticated and current_user.is_airline %}
+    <div class="row mt-5">
+        <div class="col-md-12 text-center">
+            <h2>Dashboard Compagnia</h2>
+            <a href="{{ url_for('airline.dashboard') }}" class="btn btn-outline-primary">Gestisci voli</a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Imposta la data minima a oggi
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('data').min = today;
+    
+    // Validazione form
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        const partenza = document.getElementById('aeroporto_partenza').value;
+        const arrivo = document.getElementById('aeroporto_arrivo').value;
+        
+        if (partenza === arrivo) {
+            e.preventDefault();
+            alert('L\'aeroporto di partenza non può essere uguale all\'aeroporto di arrivo');
+        }
+    });
+});
+</script>
+{% endblock %} 

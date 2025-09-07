@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Lista Voli - {{ current_user.compagnia.nome_compagnia }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1>Lista Voli</h1>
+                <a href="{{ url_for('airline.nuovo_volo') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nuovo Volo
+                </a>
+            </div>
+
+            {% if voli %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Numero Volo</th>
+                                <th>Partenza</th>
+                                <th>Arrivo</th>
+                                <th>Data Partenza</th>
+                                <th>Data Arrivo</th>
+                                <th>Stato</th>
+                                <th>Posti Disponibili</th>
+                                <th>Azioni</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for volo in voli %}
+                                <tr>
+                                    <td>{{ volo.numero_volo }}</td>
+                                    <td>{{ volo.aeroporto_partenza.città }} ({{ volo.aeroporto_partenza.codice_iata }})</td>
+                                    <td>{{ volo.aeroporto_arrivo.città }} ({{ volo.aeroporto_arrivo.codice_iata }})</td>
+                                    <td>{{ volo.data_partenza.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>{{ volo.data_arrivo.strftime('%d/%m/%Y %H:%M') }}</td>
+                                    <td>
+                                        {% if volo.data_arrivo < now %}
+                                            <span class="badge bg-secondary">Completato</span>
+                                        {% elif volo.data_partenza <= now and volo.data_arrivo >= now %}
+                                            <span class="badge bg-success">In Volo</span>
+                                        {% else %}
+                                            <span class="badge bg-primary">Programmato</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small>
+                                            Economy: {{ volo.posti_economy_disponibili }}/{{ volo.posti_economy }}<br>
+                                            Business: {{ volo.posti_business_disponibili }}/{{ volo.posti_business }}<br>
+                                            First: {{ volo.posti_first_disponibili }}/{{ volo.posti_first }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <a href="{{ url_for('main.visualizza_statistiche', compagnia_id=current_user.compagnia.id) }}" 
+                                               class="btn btn-info btn-sm" title="Statistiche">
+                                                <i class="fas fa-chart-bar"></i>
+                                            </a>
+                                            {% if volo.data_partenza > now %}
+                                                <a href="{{ url_for('airline.modifica_volo', volo_id=volo.id) }}" 
+                                                   class="btn btn-warning btn-sm" title="Modifica">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <button type="button" 
+                                                        class="btn btn-danger btn-sm" 
+                                                        title="Elimina"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#eliminaVolo{{ volo.id }}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+
+                                        <!-- Modal per conferma eliminazione -->
+                                        <div class="modal fade" id="eliminaVolo{{ volo.id }}" tabindex="-1" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">Conferma Eliminazione</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Sei sicuro di voler eliminare il volo {{ volo.numero_volo }}?
+                                                        Questa azione non può essere annullata.
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                                        <form action="{{ url_for('airline.elimina_volo', volo_id=volo.id) }}" method="POST" class="d-inline">
+                                                            <button type="submit" class="btn btn-danger">Elimina</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    Non ci sono voli registrati. 
+                    <a href="{{ url_for('airline.nuovo_volo') }}" class="alert-link">
+                        Aggiungi il tuo primo volo
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

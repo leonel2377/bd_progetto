@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block title %}Compagnie Aeree - FlightBooker{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4">Compagnie Aeree Registrate</h1>
+    
+    {% if compagnie %}
+        <div class="row">
+            {% for compagnia in compagnie %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ compagnia.nome_compagnia }}</h5>
+                            <p class="card-text">
+                                <strong>Codice IATA:</strong> {{ compagnia.codice_iata }}<br>
+                                {% if compagnia.sede_legale %}
+                                    <strong>Sede Legale:</strong> {{ compagnia.sede_legale }}
+                                {% endif %}
+                            </p>
+                            <div class="mt-3">
+                                <a href="{{ url_for('main.cerca_voli') }}?compagnia={{ compagnia.id }}" 
+                                   class="btn btn-primary">
+                                    Cerca Voli
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            Non ci sono compagnie aeree registrate al momento.
+        </div>
+    {% endif %}
+</div>
+{% endblock %} 

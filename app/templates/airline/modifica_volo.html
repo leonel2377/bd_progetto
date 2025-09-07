@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block title %}Modifica Volo - {{ volo.numero_volo }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Modifica Volo</h1>
+    <form method="POST">
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="numero_volo" class="form-label">Numero Volo</label>
+                <input type="text" class="form-control" id="numero_volo" name="numero_volo" value="{{ volo.numero_volo }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="aeroporto_partenza_id" class="form-label">Aeroporto di Partenza</label>
+                <select class="form-select" id="aeroporto_partenza_id" name="aeroporto_partenza_id" required>
+                    {% for aeroporto in aeroporti %}
+                        <option value="{{ aeroporto.id }}" {% if aeroporto.id == volo.aeroporto_partenza_id %}selected{% endif %}>
+                            {{ aeroporto.città }} ({{ aeroporto.codice_iata }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="aeroporto_arrivo_id" class="form-label">Aeroporto di Arrivo</label>
+                <select class="form-select" id="aeroporto_arrivo_id" name="aeroporto_arrivo_id" required>
+                    {% for aeroporto in aeroporti %}
+                        <option value="{{ aeroporto.id }}" {% if aeroporto.id == volo.aeroporto_arrivo_id %}selected{% endif %}>
+                            {{ aeroporto.città }} ({{ aeroporto.codice_iata }})
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="data_partenza" class="form-label">Data Partenza</label>
+                <input type="datetime-local" class="form-control" id="data_partenza" name="data_partenza" value="{{ volo.data_partenza.strftime('%Y-%m-%dT%H:%M') }}" required>
+            </div>
+            <div class="col-md-6">
+                <label for="data_arrivo" class="form-label">Data Arrivo</label>
+                <input type="datetime-local" class="form-control" id="data_arrivo" name="data_arrivo" value="{{ volo.data_arrivo.strftime('%Y-%m-%dT%H:%M') }}" required>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="posti_economy" class="form-label">Posti Economy</label>
+                <input type="number" class="form-control" id="posti_economy" name="posti_economy" min="0" value="{{ volo.posti_economy }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="posti_business" class="form-label">Posti Business</label>
+                <input type="number" class="form-control" id="posti_business" name="posti_business" min="0" value="{{ volo.posti_business }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="posti_first" class="form-label">Posti First Class</label>
+                <input type="number" class="form-control" id="posti_first" name="posti_first" min="0" value="{{ volo.posti_first }}" required>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="prezzo_economy" class="form-label">Prezzo Economy</label>
+                <input type="number" step="0.01" class="form-control" id="prezzo_economy" name="prezzo_economy" min="0" value="{{ volo.prezzo_economy }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="prezzo_business" class="form-label">Prezzo Business</label>
+                <input type="number" step="0.01" class="form-control" id="prezzo_business" name="prezzo_business" min="0" value="{{ volo.prezzo_business }}" required>
+            </div>
+            <div class="col-md-4">
+                <label for="prezzo_first" class="form-label">Prezzo First Class</label>
+                <input type="number" step="0.01" class="form-control" id="prezzo_first" name="prezzo_first" min="0" value="{{ volo.prezzo_first }}" required>
+            </div>
+        </div>
+        <button type="submit" class="btn btn-success">Salva Modifiche</button>
+        <a href="{{ url_for('airline.lista_voli') }}" class="btn btn-secondary">Annulla</a>
+    </form>
+</div>
+{% endblock %} 

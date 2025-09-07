@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Prenota Volo - FlightBooker{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title mb-0">Prenota Volo {{ volo.numero_volo }}</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Dettagli Volo -->
+                    <div class="mb-4">
+                        <h3>Dettagli Volo</h3>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Compagnia:</strong> {{ volo.compagnia.nome_compagnia }}</p>
+                                <p><strong>Partenza:</strong> {{ volo.aeroporto_partenza.città }} ({{ volo.aeroporto_partenza.codice_iata }})</p>
+                                <p><strong>Orario Partenza:</strong> {{ volo.data_partenza.strftime('%d/%m/%Y %H:%M') }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p><strong>Arrivo:</strong> {{ volo.aeroporto_arrivo.città }} ({{ volo.aeroporto_arrivo.codice_iata }})</p>
+                                <p><strong>Orario Arrivo:</strong> {{ volo.data_arrivo.strftime('%d/%m/%Y %H:%M') }}</p>
+                                <p><strong>Durata:</strong> {{ (volo.data_arrivo - volo.data_partenza).total_seconds() / 3600|round(1) }} ore</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Form Prenotazione -->
+                    <form method="POST" id="prenotazioneForm">
+                        <h3>Dettagli Prenotazione</h3>
+                        
+                        <!-- Numero Passeggeri -->
+                        <div class="mb-3">
+                            <label for="passeggeri" class="form-label">Numero di Passeggeri</label>
+                            <input type="number" class="form-control" id="passeggeri" name="passeggeri" 
+                                   min="1" max="9" value="1" required
+                                   onchange="aggiornaPrezzi()">
+                        </div>
+
+                        <!-- Classe -->
+                        <div class="mb-3">
+                            <label for="classe" class="form-label">Classe</label>
+                            <select class="form-select" id="classe" name="classe" required
+                                    onchange="aggiornaPrezzi()">
+                                <option value="economy" 
+                                        data-prezzo="{{ volo.prezzo_economy }}"
+                                        data-posti="{{ disponibilità.posti_economy_disponibili }}">
+                                    Economy (€{{ "%.2f"|format(volo.prezzo_economy) }})
+                                </option>
+                                <option value="business"
+                                        data-prezzo="{{ volo.prezzo_business }}"
+                                        data-posti="{{ disponibilità.posti_business_disponibili }}">
+                                    Business (€{{ "%.2f"|format(volo.prezzo_business) }})
+                                </option>
+                                <option value="first"
+                                        data-prezzo="{{ volo.prezzo_first }}"
+                                        data-posti="{{ disponibilità.posti_first_disponibili }}">
+                                    First Class (€{{ "%.2f"|format(volo.prezzo_first) }})
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Opzioni Extra -->
+                        <div class="mb-3">
+                            <h4>Opzioni Extra</h4>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="bagaglio_extra" 
+                                               id="bagaglio_extra" onchange="aggiornaPrezzi()">
+                                        <label class="form-check-label" for="bagaglio_extra">
+                                            Bagaglio Extra (+€30 per passeggero)
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" name="servizi_extra"
+                                               id="servizi_extra" onchange="aggiornaPrezzi()">
+                                        <label class="form-check-label" for="servizi_extra">
+                                            Servizi Extra (+€20 per passeggero)
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Riepilogo e Prezzo Totale -->
+                        <div class="card mt-4">
+                            <div class="card-body">
+                                <h4>Riepilogo</h4>
+                                <div id="riepilogoPrezzi">
+                                    <!-- Verrà popolato dinamicamente con JavaScript -->
+                                </div>
+                                <hr>
+                                <h5>Prezzo Totale: <span id="prezzoTotale">€0.00</span></h5>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="text-center mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Conferma Prenotazione</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Aggiorna i prezzi in base alle selezioni
+function aggiornaPrezzi() {
+    const classe = document.getElementById('classe');
+    const opzione = classe.options[classe.selectedIndex];
+    const prezzoBase = parseFloat(opzione.dataset.prezzo);
+    const numPasseggeri = parseInt(document.getElementById('passeggeri').value);
+    const bagaglioExtra = document.getElementById('bagaglio_extra').checked;
+    const serviziExtra = document.getElementById('servizi_extra').checked;
+    
+    let prezzoPerPasseggero = prezzoBase;
+    if (bagaglioExtra) prezzoPerPasseggero += 30;
+    if (serviziExtra) prezzoPerPasseggero += 20;
+    
+    const prezzoTotale = prezzoPerPasseggero * numPasseggeri;
+    
+    // Aggiorna il riepilogo
+    const riepilogo = document.getElementById('riepilogoPrezzi');
+    riepilogo.innerHTML = `
+        <p>Classe: ${classe.options[classe.selectedIndex].text}</p>
+        <p>Numero passeggeri: ${numPasseggeri}</p>
+        <p>Prezzo base per passeggero: €${prezzoBase.toFixed(2)}</p>
+        ${bagaglioExtra ? '<p>Bagaglio extra: +€30 per passeggero</p>' : ''}
+        ${serviziExtra ? '<p>Servizi extra: +€20 per passeggero</p>' : ''}
+        <p>Prezzo per passeggero: €${prezzoPerPasseggero.toFixed(2)}</p>
+    `;
+    
+    // Aggiorna il prezzo totale
+    document.getElementById('prezzoTotale').textContent = `€${prezzoTotale.toFixed(2)}`;
+}
+
+// Inizializza il form
+document.addEventListener('DOMContentLoaded', function() {
+    aggiornaPrezzi();
+    
+    // Validazione form
+    const form = document.getElementById('prenotazioneForm');
+    form.addEventListener('submit', function(e) {
+        const classe = document.getElementById('classe');
+        const opzione = classe.options[classe.selectedIndex];
+        const postiDisponibili = parseInt(opzione.dataset.posti);
+        const numPasseggeri = parseInt(document.getElementById('passeggeri').value);
+        
+        if (numPasseggeri > postiDisponibili) {
+            e.preventDefault();
+            alert(`Solo ${postiDisponibili} posti disponibili in classe ${classe.value}`);
+        }
+    });
+});
+</script>
+{% endblock %} 

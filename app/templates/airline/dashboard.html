@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Compagnia{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Dashboard Compagnia Aerea</h1>
+            <p class="lead">Benvenuto nella tua area di gestione, {{ current_user.compagnia.nome_compagnia }}</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Gestione Voli</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Da qui puoi gestire tutti i tuoi voli:</p>
+                            <ul class="list-unstyled">
+                                <li><a href="{{ url_for('airline.nuovo_volo') }}" class="btn btn-primary mb-2 w-100">Aggiungi Nuovo Volo</a></li>
+                                <li><a href="{{ url_for('airline.lista_voli') }}" class="btn btn-info mb-2 w-100">Visualizza Tutti i Voli</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Statistiche</h5>
+                        </div>
+                        <div class="card-body">
+                            <p>Visualizza le statistiche della tua compagnia:</p>
+                            <a href="{{ url_for('main.visualizza_statistiche', compagnia_id=current_user.compagnia.id) }}" class="btn btn-success w-100">Visualizza Statistiche</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Aggiungi qui eventuali script JavaScript per la dashboard
+});
+</script>
+{% endblock %} 

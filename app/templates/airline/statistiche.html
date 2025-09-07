@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Statistiche {{ statistiche.nome_compagnia }}</h2>
+    
+    <!-- Filtro periodo -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <label for="data_inizio" class="form-label">Data inizio</label>
+                    <input type="date" class="form-control" id="data_inizio" name="data_inizio" 
+                           value="{{ data_inizio }}" required>
+                </div>
+                <div class="col-md-4">
+                    <label for="data_fine" class="form-label">Data fine</label>
+                    <input type="date" class="form-control" id="data_fine" name="data_fine" 
+                           value="{{ data_fine }}" required>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary">Filtra</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Statistiche generali -->
+    <div class="row">
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Voli</h5>
+                    <p class="card-text display-4">{{ statistiche.numero_voli }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Passeggeri</h5>
+                    <p class="card-text display-4">{{ statistiche.numero_passeggeri }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Guadagno Totale</h5>
+                    <p class="card-text display-4">€{{ "%.2f"|format(statistiche.guadagno_totale) }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Prezzo Medio</h5>
+                    <p class="card-text display-4">€{{ "%.2f"|format(statistiche.prezzo_medio) }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistiche per classe -->
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Economy</h5>
+                    <p class="card-text display-4">{{ statistiche.passeggeri_economy }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">Business</h5>
+                    <p class="card-text display-4">{{ statistiche.passeggeri_business }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h5 class="card-title">First Class</h5>
+                    <p class="card-text display-4">{{ statistiche.passeggeri_first }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if statistiche.numero_voli == 0 %}
+    <div class="alert alert-info mt-4">
+        Nessun volo trovato nel periodo selezionato.
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}Statistiche - {{ current_user.compagnia.nome_compagnia }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">Statistiche {{ current_user.compagnia.nome_compagnia }}</h1>
+            
+            <!-- Riepilogo Generale -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Totale Voli</h5>
+                            <h2 class="card-text">{{ totale_voli }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Voli Completati</h5>
+                            <h2 class="card-text">{{ voli_completati }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Voli in Corso</h5>
+                            <h2 class="card-text">{{ voli_in_corso }}</h2>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">Voli Futuri</h5>
+                            <h2 class="card-text">{{ voli_futuri }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistiche Posti -->
+            <div class="row mb-4">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title mb-0">Statistiche Posti</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <!-- Economy -->
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Economy</h5>
+                                            <div class="progress mb-3">
+                                                <div class="progress-bar bg-primary" role="progressbar"
+                                                     {% if posti_economy_totali > 0 %}
+                                                         style="width: {{ (posti_economy_venduti / posti_economy_totali * 100)|round(1) }}%"
+                                                     {% else %}
+                                                         style="width: 0%"
+                                                     {% endif %}>
+                                                    {% if posti_economy_totali > 0 %}
+                                                        {{ (posti_economy_venduti / posti_economy_totali * 100)|round(1) }}%
+                                                    {% else %}
+                                                        0%
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <p class="mb-1">Venduti: {{ posti_economy_venduti }}</p>
+                                            <p class="mb-1">Disponibili: {{ posti_economy_disponibili }}</p>
+                                            <p class="mb-0">Totali: {{ posti_economy_totali }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- Business -->
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Business</h5>
+                                            <div class="progress mb-3">
+                                                <div class="progress-bar bg-success" role="progressbar"
+                                                     {% if posti_business_totali > 0 %}
+                                                         style="width: {{ (posti_business_venduti / posti_business_totali * 100)|round(1) }}%"
+                                                     {% else %}
+                                                         style="width: 0%"
+                                                     {% endif %}>
+                                                    {% if posti_business_totali > 0 %}
+                                                        {{ (posti_business_venduti / posti_business_totali * 100)|round(1) }}%
+                                                    {% else %}
+                                                        0%
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <p class="mb-1">Venduti: {{ posti_business_venduti }}</p>
+                                            <p class="mb-1">Disponibili: {{ posti_business_disponibili }}</p>
+                                            <p class="mb-0">Totali: {{ posti_business_totali }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- First Class -->
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">First Class</h5>
+                                            <div class="progress mb-3">
+                                                <div class="progress-bar bg-warning" role="progressbar"
+                                                     {% if posti_first_totali > 0 %}
+                                                         style="width: {{ (posti_first_venduti / posti_first_totali * 100)|round(1) }}%"
+                                                     {% else %}
+                                                         style="width: 0%"
+                                                     {% endif %}>
+                                                    {% if posti_first_totali > 0 %}
+                                                        {{ (posti_first_venduti / posti_first_totali * 100)|round(1) }}%
+                                                    {% else %}
+                                                        0%
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <p class="mb-1">Venduti: {{ posti_first_venduti }}</p>
+                                            <p class="mb-1">Disponibili: {{ posti_first_disponibili }}</p>
+                                            <p class="mb-0">Totali: {{ posti_first_totali }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grafico Occupazione -->
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title mb-0">Occupazione per Classe</h3>
+                        </div>
+                        <div class="card-body">
+                            <canvas id="graficoOccupazione"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const ctx = document.getElementById('graficoOccupazione').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Economy', 'Business', 'First Class'],
+            datasets: [{
+                label: 'Posti Venduti',
+                data: [
+                    {{ posti_economy_venduti }},
+                    {{ posti_business_venduti }},
+                    {{ posti_first_venduti }}
+                ],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.8)',
+                    'rgba(75, 192, 192, 0.8)',
+                    'rgba(255, 206, 86, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 206, 86, 1)'
+                ],
+                borderWidth: 1
+            }, {
+                label: 'Posti Disponibili',
+                data: [
+                    {{ posti_economy_disponibili }},
+                    {{ posti_business_disponibili }},
+                    {{ posti_first_disponibili }}
+                ],
+                backgroundColor: [
+                    'rgba(54, 162, 235, 0.4)',
+                    'rgba(75, 192, 192, 0.4)',
+                    'rgba(255, 206, 86, 0.4)'
+                ],
+                borderColor: [
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 206, 86, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Numero di Posti'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Classe'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Distribuzione Posti per Classe'
+                },
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+});
+</script>
+{% endblock %} 
