@@ -115,8 +115,8 @@
 {% block extra_js %}
 <script>
 function stampaBiglietti(prenotazioneId) {
-    // Implementare la logica di stampa dei biglietti
-    alert('Funzionalità di stampa biglietti in sviluppo');
+    // Apri il PDF in una nuova finestra per il download
+    window.open(`/stampa_prenotazione/${prenotazioneId}`, '_blank');
 }
 
 function annullaPrenotazione(prenotazioneId) {

@@ -97,6 +97,10 @@ def init_database():
             data_partenza = datetime.now() + timedelta(days=random.randint(1, 30))
             data_arrivo = data_partenza + timedelta(hours=random.randint(1, 6))
             
+            posti_economy = random.randint(50, 200)
+            posti_business = random.randint(10, 50)
+            posti_first = random.randint(5, 20)
+            
             volo = Volo(
                 numero_volo=f'TA{100 + i}',
                 compagnia_id=compagnia_db.id,
@@ -104,9 +108,10 @@ def init_database():
                 aeroporto_arrivo_id=arrivo.id,
                 data_partenza=data_partenza,
                 data_arrivo=data_arrivo,
-                posti_economy=random.randint(50, 200),
-                posti_business=random.randint(10, 50),
-                posti_first=random.randint(5, 20),
+                posti_economy=posti_economy,
+                posti_business=posti_business,
+                posti_first=posti_first,
+                posti_totali=posti_economy + posti_business + posti_first,
                 prezzo_economy=random.uniform(50, 300),
                 prezzo_business=random.uniform(200, 800),
                 prezzo_first=random.uniform(500, 1500)
