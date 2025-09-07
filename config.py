@@ -7,10 +7,16 @@ load_dotenv(os.path.join(basedir, '.env'))
 
 class Config:
     # Configurazione di base
-    SECRET_KEY = 'chiave-sviluppo-flask-app-2024'
+    SECRET_KEY = os.environ.get('SECRET_KEY') or 'chiave-sviluppo-flask-app-2024'
     
-    # Configurazione Database - PostgreSQL
-    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:7999@localhost:5432/flight_booking'
+    # Configurazione Database - supporta PostgreSQL e SQLite
+    DATABASE_URL = os.environ.get('DATABASE_URL')
+    if DATABASE_URL:
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    else:
+        # Default a SQLite per sviluppo locale
+        SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'flight_booking.db')
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Configurazione JWT
